@@ -46,16 +46,23 @@ class ControllerTransaction {
       .catch(next)
   }
 
-  static readAllwFilter(req, res, next) {
-    let schemaField = Object.keys(Transaction.prototype.schema.paths)
-    let filteredField = Object.keys(req.body).filter((x) => schemaField.indexOf(x) > -1)
-    let query = filteredField.reduce((acc, el) => Object.assign(acc, {[el]: req.body[el]}), {})
+  static readAllTransactionOneUser(req, res, next) {
+    let input = {
+      buyerId: ObjectId(req.userId)
+    }
 
-    Transaction.find(query).populate('user_id').lean()
+    Transaction.find(input).populate('buyerId').populate('itemBought')
       .then((transactions) => {
-        res.json(transactions)
+        res.status(200).json(transactions)
       })
       .catch(next)
+  }
+
+  static readAllTransaction(req, res, next) {
+    Transaction.find().populate('buyerId').populate('itemBought')
+      .then((transactions) => {
+        res.status(200).json(transactions)
+      })
   }
 
   static readOne(req, res, next) {
@@ -82,6 +89,20 @@ class ControllerTransaction {
       })
       .catch(next)
   }  
+
+  static checkout(req, res, next) {
+    // tambah alamat, metode kirim, metode pembayaran baru checkout
+    let transsactionId = req.params.id
+    let updatedCheckout = { transactionStatus: 'checkout' }
+    Transaction.findByIdAndUpdate(transsactionId, updatedCheckout, { useFindAndModify: false, new: true })
+      .then((res) => {
+        if (!res) throw ({ code: 404, messagee: 'Transaction not found'})
+        else {
+          res.status(201).json(res)
+        }
+      })
+      .catch(next)
+  }
 }
 
 module.exports = ControllerTransaction

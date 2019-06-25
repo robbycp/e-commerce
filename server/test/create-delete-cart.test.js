@@ -145,16 +145,57 @@ describe('Add to cart product', function() {
   })
 })
 
-describe('Delete product from add to cart', function() {
-  chai
-    .request(app)
-    .delete(`/transaction/${productIdCreated1}`)
-    .set('token', token)
-    .then((res) => {
-      expect(res).to.have.status(201)
-      expect(res.body).to.have.property('message', 'successfully delete transaction')
+describe('Get data transaction for login customer', function() {
+  it('should return status 200 and data transaction for login customer with field', function(done) {
+    chai
+      .request(app)
+      .get(`/transactions`)
+      .set('token', token)
+      .then((res) => {
+        expect(res).to.have.status(200)
+        done()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  })
+  // it('should return status 401 and message unauthorized for nonAdmin or nonUserId', function(done) {
+
+  // })
+})
+
+describe('Get all transaction for admin', function() {
+  it('should return status 200 and all data transaction field', function(done) {
+    chai
+      .request(app)
+      .get(`/transactions/alltrx`)
+      .set('token', token)
+      .then((res) => {
+        console.log('res.body get data traansaction', res.body)
+        expect(res).to.have.status(200)
+        done()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  })
+})
+
+after(function() {
+  describe('Delete product from add to cart', function() {
+    it('should return status 201 and messaage sucessfully delete transaction', function(done) {
+      chai
+        .request(app)
+        .delete(`/transaction/${productIdCreated1}`)
+        .set('token', token)
+        .then((res) => {
+          expect(res).to.have.status(201)
+          expect(res.body).to.have.property('message', 'successfully delete transaction')
+          done()
+        })
+        .catch(err => {
+          console.log(err)
+        })
     })
-    .catch(err => {
-      console.log(err)
-    })
+  })
 })
