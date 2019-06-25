@@ -1,7 +1,7 @@
 <template>
-  <v-toolbar app fixed>
+  <v-toolbar app dark fixed>
     <v-toolbar-side-icon></v-toolbar-side-icon>
-    <v-toolbar-title>White Collar</v-toolbar-title>
+    <v-toolbar-title>Brimlezz</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items class="hidden-sm-and-down">
       <v-btn to="/" flat>Home</v-btn>

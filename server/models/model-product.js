@@ -6,10 +6,7 @@ var Schema = mongoose.Schema;
 var productSchema = new Schema({
   name: String,
   description: String,
-  stock: [{
-    typeStock: String, // size
-    amount: Number
-  }],
+  stock: Number,
   image: String,
   price: Number,
   currency: String,

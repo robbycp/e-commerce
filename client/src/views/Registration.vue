@@ -6,31 +6,35 @@
           <v-tab key="login" ripple>Login</v-tab>
           <v-tab key="registration" ripple>Registration</v-tab>
           <v-tab-item key="login">
-            <v-card flat>
-              <form>
-                <v-text-field v-model="loginUser.username" label="Username" required></v-text-field>
-                <v-text-field v-model="loginUser.password" :type="'password'" label="Password" required></v-text-field>
-                <v-btn @click="defaultLogin()" class="success">Submit</v-btn>
-                <p>Or sign in using Google</p>
-                <g-signin-button
-                  :params="googleSignInParams"
-                  @success="onSignInSuccess"
-                  @error="onSignInError">
-                  Sign in with Google
-                </g-signin-button>
-              </form>
-            </v-card>
+            <v-container>
+              <v-card flat>
+                <form>
+                  <v-text-field v-model="loginUser.username" label="Username" required></v-text-field>
+                  <v-text-field v-model="loginUser.password" :type="'password'" label="Password" required></v-text-field>
+                  <v-btn @click="defaultLogin()" class="success">Submit</v-btn>
+                  <p>Or sign in using Google</p>
+                  <g-signin-button
+                    :params="googleSignInParams"
+                    @success="onSignInSuccess"
+                    @error="onSignInError">
+                    Sign in with Google
+                  </g-signin-button>
+                </form>
+              </v-card>
+            </v-container>
           </v-tab-item>
           <v-tab-item key="registration">
-            <v-card flat>
-              <form>
-                <v-text-field v-model="registerUser.full_name" label="Full Name" required></v-text-field>
-                <v-text-field v-model="registerUser.username" label="Username" required></v-text-field>
-                <v-text-field v-model="registerUser.password" label="Password" :type="'password'" required></v-text-field>
-                <v-text-field v-model="registerUser.email" label="Email" required></v-text-field>
-                <v-btn @click="sendRegisterUser()">Register</v-btn>
-              </form>
-            </v-card>
+            <v-container>
+              <v-card flat>
+                <form>
+                  <v-text-field v-model="registerUser.full_name" label="Full Name" required></v-text-field>
+                  <v-text-field v-model="registerUser.username" label="Username" required></v-text-field>
+                  <v-text-field v-model="registerUser.password" label="Password" :type="'password'" required></v-text-field>
+                  <v-text-field v-model="registerUser.email" label="Email" required></v-text-field>
+                  <v-btn @click="sendRegisterUser()">Register</v-btn>
+                </form>
+              </v-card>
+            </v-container>
           </v-tab-item>
         </v-tabs>
       </v-card>

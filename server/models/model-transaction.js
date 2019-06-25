@@ -13,7 +13,9 @@ var transactionSchema = new Schema({
   }],
   paymentStatus: String, // unpaid => unpaid
   transactionStatus: String, // cart => checkout => payment received => send => success
-  buyerId: {type: 'ObjectId', ref: 'User'}
+  buyerId: {type: 'ObjectId', ref: 'User'},
+  address: String,
+  sendMethod: String
 }, {timestamps: true});
 
 var Transaction = mongoose.model('Transaction', transactionSchema);

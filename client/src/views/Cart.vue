@@ -1,34 +1,78 @@
 <template>
   <div>
-    <v-toolbar flat color="white">
-      <v-toolbar-title>Your Shoping Basket Anjing</v-toolbar-title>
-      <v-divider class="mx-2" inset vertical></v-divider>
-      <v-spacer></v-spacer>
-      <v-btn color="primary" dark class="mb-2">Checkout</v-btn>
-    </v-toolbar>
-    <v-data-table :headers="headers" :items="productCart" class="elevation-1">
-      <template v-slot:items="props">
-        <td>{{ props.item.name }}</td>
-        <td class="text-xs-right">{{ props.item.price }}</td>
-        <td class="text-xs-right">{{ props.item.quantity }}</td>
-        <td class="text-xs-right">{{ props.item.total }}</td>
-        <td class="text-xs-right">{{ props.item.protein }}</td>
-        <td class="justify-center layout px-0">
-          <v-icon small @click="deleteItem(props.item)">
-            delete
-          </v-icon>
-        </td>
-      </template>
-    </v-data-table>
-    <div>
-      <p>Bag Overview</p>
-      <p>
-        Your Total is Rp {{ totalCart }}
-      </p>
-    </div>
     <v-container>
-      <v-btn>Update</v-btn>
-      <v-btn>Checkout ({{ totalCart }} )</v-btn>
+      <v-toolbar flat color="white">
+        <v-toolbar-title>Your Shoping Basket</v-toolbar-title>
+        <v-divider class="mx-2" inset vertical></v-divider>
+        <v-spacer></v-spacer>
+      </v-toolbar>
+      <v-data-table :headers="headers" :items="productCart" class="elevation-1">
+        <template v-slot:items="props">
+          <td>{{ props.item.name }}</td>
+          <td class="text-xs-right">{{ props.item.price }}</td>
+          <td class="text-xs-right">
+            <v-layout row>
+              <v-flex>
+                <v-btn fab dark small color="green" @click="minQuantity(props.item._id)"
+                  >-</v-btn>
+              </v-flex>
+              <v-flex>
+                <v-text-field v-model="props.item.quantity"></v-text-field>
+              </v-flex>
+              <v-flex>
+                <v-btn fab dark small color="green" @click="addQuantity(props.item._id)"
+                  >+</v-btn>
+              </v-flex>
+              <v-flex>
+                <p>
+                  {{ props.item.quantity }}
+                </p>
+              </v-flex>
+            </v-layout>
+          </td>
+          <td class="text-xs-right">{{ props.item.total }}</td>
+          <td class="text-xs-right">{{ props.item.protein }}</td>
+          <td class="justify-center layout px-0">
+            <v-icon small @click="deleteItem(props.item)">
+              delete
+            </v-icon>
+          </td>
+        </template>
+      </v-data-table>
+    </v-container>
+    <v-layout>
+      <v-flex xs 12 offset-md6 md6>
+        <v-container>
+          <v-layout row>
+            <v-flex xs6>
+              <h3>Bag Overview</h3>
+            </v-flex>
+            <v-flex xs6>
+              <p>Your Total is Rp {{ totalCart }}</p>
+            </v-flex>
+          </v-layout>
+          <v-btn @click="updateTrx()">Update</v-btn>
+        </v-container>
+      </v-flex>
+    </v-layout>
+    <v-container>
+      <v-layout row>
+        <v-flex xs12>
+          <v-card>
+            <v-card-title>
+              Please inform us your address and type of sending method
+            </v-card-title>
+            <v-card-text>
+              <form>
+                <v-text-field v-model="address" label="Addresss" required></v-text-field>
+                <v-select v-model="sendMethod" :items="listSendMethod" label="Send Method"
+                  required></v-select>
+                <v-btn @click="sendCheckout()" class="success">Checkout Rp {{ totalCart }}</v-btn>
+              </form>
+            </v-card-text>
+          </v-card>
+        </v-flex>
+      </v-layout>
     </v-container>
   </div>
 </template>
@@ -49,27 +93,19 @@ export default {
       { text: 'Actions', value: 'name', sortable: false }
     ],
     productCart: [],
-    editedIndex: -1,
-    editedItem: {
-      name: '',
-      price: 0,
-      quantity: 0,
-      total: 0
-    },
-    defaultItem: {
-      name: '',
-      price: 0,
-      quantity: 0,
-      total: 0
-    }
+    address: '',
+    sendMethod: '',
+    listSendMethod: [
+      'JNE YES',
+      'JNE REGULAR',
+      'TIKI EXPRESS',
+      'TIKI REGULAR'
+    ]
   }),
 
   computed: {
-    formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-    },
     totalCart () {
-      return this.productCart.reduce((acc, el) => acc + el.total)
+      return this.productCart.reduce((acc, el) => acc + el.total, 0)
     }
   },
 
@@ -79,49 +115,79 @@ export default {
 
   methods: {
     initialize () {
-      this.productCart = [
+      let products = [
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiwef9',
           name: 'Frozen Yogurt',
-          price: 159,
-          quantity: 6.0,
-          total: 24
+          price: 10000,
+          quantity: 2
         },
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiw323',
           name: 'Ice cream sandwich',
-          price: 237,
-          quantity: 9.0,
-          total: 37
+          price: 20000,
+          quantity: 5
         },
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiw21312',
           name: 'Eclair',
-          price: 262,
-          quantity: 16.0,
-          total: 23
+          price: 25000,
+          quantity: 2
         },
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiw2389',
           name: 'Cupcake',
-          price: 305,
-          quantity: 3.7,
-          total: 67
+          price: 80000,
+          quantity: 2
         },
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiwef12',
           name: 'Gingerbread',
-          price: 356,
-          quantity: 16.0,
-          total: 49
+          price: 100000,
+          quantity: 2
         },
         {
+          _id: '4io41jsfase9wnvaifjaoweifjiwe213',
           name: 'Jelly bean',
-          price: 375,
-          quantity: 0.0,
-          total: 94
+          price: 95000,
+          quantity: 2
         }
       ]
+      products = products.map((product) => {
+        return Object.assign(product, {
+          total: product.price * product.quantity
+        })
+      })
+      this.productCart = products
     },
 
     deleteItem (item) {
       const index = this.productCart.indexOf(item)
       confirm('Are you sure you want to delete this item?') && this.productCart.splice(index, 1)
+    },
+
+    sendCheckout () {
+
+    },
+
+    addQuantity (id) {
+      this.productCart.forEach((product) => {
+        if (product._id === id) {
+          product.quantity++
+        }
+      })
+    },
+
+    minQuantity (id) {
+      this.productCart.forEach((product) => {
+        if (product._id === id) {
+          product.quantity--
+        }
+      })
+    },
+
+    updateTrx () {
+
     }
   }
 }

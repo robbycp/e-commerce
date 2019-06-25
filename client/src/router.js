@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
-import About from './views/About.vue'
 import Product from './views/Products.vue'
 import Registration from './views/Registration.vue'
 import Cart from './views/Cart.vue'
 import AdminLogin from './views/Admin-Login.vue'
 import Dashboard from './views/Dashboard.vue'
 import AddProduct from './views/AddProduct.vue'
+import ProductDetail from './views/Product-Details.vue'
 
 Vue.use(Router)
 
@@ -21,14 +21,14 @@ export default new Router({
       component: Home
     },
     {
-      path: '/about',
-      name: 'about',
-      component: About
+      path: '/products',
+      name: 'products',
+      component: Product
     },
     {
-      path: '/products',
-      name: 'product',
-      component: Product
+      path: '/products/:productId',
+      name: 'productDetail',
+      component: ProductDetail
     },
     {
       path: '/registration',
