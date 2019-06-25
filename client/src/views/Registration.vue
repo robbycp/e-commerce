@@ -2,7 +2,7 @@
   <v-layout row>
     <v-flex xs12 sm8 offset-sm2>
       <v-card xs6 offset-xs3>
-        <v-tabs v-model="activeTab" color="cyan" dark slider-color="yellow">
+        <v-tabs v-model="activeTab" color="orange darken-3" dark slider-color="yellow">
           <v-tab key="login" ripple>Login</v-tab>
           <v-tab key="registration" ripple>Registration</v-tab>
           <v-tab-item key="login">

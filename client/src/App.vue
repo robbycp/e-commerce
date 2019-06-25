@@ -11,6 +11,7 @@
 <script>
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
+import axios from 'axios'
 
 export default {
   name: 'App',
@@ -20,7 +21,15 @@ export default {
   },
   data () {
     return {
-      //
+      url_server: 'http://localhost:3000'
+    }
+  },
+  methods: {
+    getListProducts () {
+      axios({
+        method: 'GET',
+        url: `${this.url_server}/products`
+      })
     }
   }
 }

@@ -11,29 +11,17 @@
           <td>{{ props.item.name }}</td>
           <td class="text-xs-right">{{ props.item.price }}</td>
           <td class="text-xs-right">
-            <v-layout row>
-              <v-flex>
-                <v-btn fab dark small color="green" @click="minQuantity(props.item._id)"
-                  >-</v-btn>
-              </v-flex>
-              <v-flex>
-                <v-text-field v-model="props.item.quantity"></v-text-field>
-              </v-flex>
-              <v-flex>
-                <v-btn fab dark small color="green" @click="addQuantity(props.item._id)"
-                  >+</v-btn>
-              </v-flex>
-              <v-flex>
-                <p>
-                  {{ props.item.quantity }}
-                </p>
-              </v-flex>
+            <v-layout v-layout align-center justify-center row fill-height>
+              <v-btn fab dark small color="green" @click="minQuantity(props.item._id)"
+                >-</v-btn>
+              <v-text-field v-model="props.item.quantity"></v-text-field>
+              <v-btn fab dark small color="green" @click="addQuantity(props.item._id)"
+                >+</v-btn>
             </v-layout>
           </td>
           <td class="text-xs-right">{{ props.item.total }}</td>
-          <td class="text-xs-right">{{ props.item.protein }}</td>
           <td class="justify-center layout px-0">
-            <v-icon small @click="deleteItem(props.item)">
+            <v-icon small class="mr-2" @click="deleteItem(props.item)">
               delete
             </v-icon>
           </td>
@@ -60,7 +48,7 @@
         <v-flex xs12>
           <v-card>
             <v-card-title>
-              Please inform us your address and type of sending method
+              <h2>Shipping Information</h2>
             </v-card-title>
             <v-card-text>
               <form>
@@ -100,22 +88,29 @@ export default {
       'JNE REGULAR',
       'TIKI EXPRESS',
       'TIKI REGULAR'
-    ]
+    ],
+    totalCart: 0
   }),
-
-  computed: {
-    totalCart () {
-      return this.productCart.reduce((acc, el) => acc + el.total, 0)
-    }
-  },
 
   created () {
     this.initialize()
+    this.addTotalPerProduct()
+    this.getTotalCart()
   },
 
   methods: {
+    getTotalCart () {
+      this.totalCart = this.productCart.reduce((acc, el) => acc + el.total, 0)
+    },
+    addTotalPerProduct () {
+      this.productCart = this.productCart.map((product) => {
+        return Object.assign(product, {
+          total: product.price * product.quantity
+        })
+      })
+    },
     initialize () {
-      let products = [
+      this.productCart = [
         {
           _id: '4io41jsfase9wnvaifjaoweifjiwef9',
           name: 'Frozen Yogurt',
@@ -153,12 +148,6 @@ export default {
           quantity: 2
         }
       ]
-      products = products.map((product) => {
-        return Object.assign(product, {
-          total: product.price * product.quantity
-        })
-      })
-      this.productCart = products
     },
 
     deleteItem (item) {

@@ -2,7 +2,7 @@
   <div>
     <v-layout row>
       <v-flex xs12 md6>
-        <v-img :src="image"></v-img>
+        <v-img :src="image" max-height="450px"></v-img>
       </v-flex>
       <v-flex xs12 md6>
         <v-card>

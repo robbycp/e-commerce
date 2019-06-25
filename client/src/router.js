@@ -8,6 +8,7 @@ import AdminLogin from './views/Admin-Login.vue'
 import Dashboard from './views/Dashboard.vue'
 import AddProduct from './views/AddProduct.vue'
 import ProductDetail from './views/Product-Details.vue'
+import Thanks from './views/Thanks.vue'
 
 Vue.use(Router)
 
@@ -54,6 +55,11 @@ export default new Router({
         name: 'addProduct',
         component: AddProduct
       }]
+    },
+    {
+      path: '/thanks',
+      name: 'thanks',
+      component: Thanks
     }
   ]
 })
