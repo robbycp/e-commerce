@@ -4,10 +4,10 @@
     <v-toolbar-title>White Collar</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items class="hidden-sm-and-down">
-      <router-link to="/"><v-btn flat>Home</v-btn></router-link>
-      <router-link to="/products"><v-btn flat>Products</v-btn></router-link>
-      <router-link to="/registration"><v-btn flat>Login / Register</v-btn></router-link>
-      <router-link to="/cart"><v-btn flat>Cart</v-btn></router-link>
+      <v-btn to="/" flat>Home</v-btn>
+      <v-btn to="/products" flat>Products</v-btn>
+      <v-btn to="/registration" flat>Login / Register</v-btn>
+      <v-btn to="/cart" flat>Cart</v-btn>
     </v-toolbar-items>
   </v-toolbar>
 </template>

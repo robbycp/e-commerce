@@ -1,17 +1,17 @@
 <template>
   <div>
     <v-toolbar flat color="white">
-      <v-toolbar-title>Your Shoping Basket</v-toolbar-title>
+      <v-toolbar-title>Your Shoping Basket Anjing</v-toolbar-title>
       <v-divider class="mx-2" inset vertical></v-divider>
       <v-spacer></v-spacer>
       <v-btn color="primary" dark class="mb-2">Checkout</v-btn>
     </v-toolbar>
-    <v-data-table :headers="headers" :items="desserts" class="elevation-1">
+    <v-data-table :headers="headers" :items="productCart" class="elevation-1">
       <template v-slot:items="props">
         <td>{{ props.item.name }}</td>
-        <td class="text-xs-right">{{ props.item.calories }}</td>
-        <td class="text-xs-right">{{ props.item.fat }}</td>
-        <td class="text-xs-right">{{ props.item.carbs }}</td>
+        <td class="text-xs-right">{{ props.item.price }}</td>
+        <td class="text-xs-right">{{ props.item.quantity }}</td>
+        <td class="text-xs-right">{{ props.item.total }}</td>
         <td class="text-xs-right">{{ props.item.protein }}</td>
         <td class="justify-center layout px-0">
           <v-icon small @click="deleteItem(props.item)">
@@ -20,6 +20,16 @@
         </td>
       </template>
     </v-data-table>
+    <div>
+      <p>Bag Overview</p>
+      <p>
+        Your Total is Rp {{ totalCart }}
+      </p>
+    </div>
+    <v-container>
+      <v-btn>Update</v-btn>
+      <v-btn>Checkout ({{ totalCart }} )</v-btn>
+    </v-container>
   </div>
 </template>
 
@@ -29,38 +39,37 @@ export default {
     dialog: false,
     headers: [
       {
-        text: 'Dessert (100g serving)',
+        text: 'Product',
         align: 'left',
-        sortable: false,
         value: 'name'
       },
-      { text: 'Calories', value: 'calories' },
-      { text: 'Fat (g)', value: 'fat' },
-      { text: 'Carbs (g)', value: 'carbs' },
-      { text: 'Protein (g)', value: 'protein' },
+      { text: 'Price', value: 'price' },
+      { text: 'Quantity', value: 'quantity' },
+      { text: 'Total', value: 'total' },
       { text: 'Actions', value: 'name', sortable: false }
     ],
-    desserts: [],
+    productCart: [],
     editedIndex: -1,
     editedItem: {
       name: '',
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0
+      price: 0,
+      quantity: 0,
+      total: 0
     },
     defaultItem: {
       name: '',
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0
+      price: 0,
+      quantity: 0,
+      total: 0
     }
   }),
 
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+    },
+    totalCart () {
+      return this.productCart.reduce((acc, el) => acc + el.total)
     }
   },
 
@@ -70,83 +79,49 @@ export default {
 
   methods: {
     initialize () {
-      this.desserts = [
+      this.productCart = [
         {
           name: 'Frozen Yogurt',
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0
+          price: 159,
+          quantity: 6.0,
+          total: 24
         },
         {
           name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3
+          price: 237,
+          quantity: 9.0,
+          total: 37
         },
         {
           name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0
+          price: 262,
+          quantity: 16.0,
+          total: 23
         },
         {
           name: 'Cupcake',
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3
+          price: 305,
+          quantity: 3.7,
+          total: 67
         },
         {
           name: 'Gingerbread',
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9
+          price: 356,
+          quantity: 16.0,
+          total: 49
         },
         {
           name: 'Jelly bean',
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0
-        },
-        {
-          name: 'Lollipop',
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0
-        },
-        {
-          name: 'Honeycomb',
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5
-        },
-        {
-          name: 'Donut',
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9
-        },
-        {
-          name: 'KitKat',
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7
+          price: 375,
+          quantity: 0.0,
+          total: 94
         }
       ]
     },
 
     deleteItem (item) {
-      const index = this.desserts.indexOf(item)
-      confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+      const index = this.productCart.indexOf(item)
+      confirm('Are you sure you want to delete this item?') && this.productCart.splice(index, 1)
     }
   }
 }

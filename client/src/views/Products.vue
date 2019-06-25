@@ -1,13 +1,36 @@
 <template>
   <v-container>
-    <v-layout row>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
-      <CardProduct></CardProduct>
+    <v-layout row wrap>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
+      <v-flex xs12 sm6 md4>
+        <CardProduct></CardProduct>
+      </v-flex>
     </v-layout>
   </v-container>
 </template>

@@ -16,7 +16,7 @@
     "vue-google-signin-button": "^1.0.4",
     "vue-router": "^3.0.3",
     "vue-sweetalert2": "^2.0.5",
-    "vuetify": "^1.5.5",
+    "vuetify": "^1.5.16",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
