@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  name: 'footer',
+  name: 'footbar',
   data () {
     return {
       icons: [

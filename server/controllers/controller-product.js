@@ -3,6 +3,7 @@ const { deleteFile } = require('../helpers/image')
 
 class ControllerArticle {
   static create(req, res, next) {
+    console.log(' masuk create product', req.body)
     let newProduct = {
       name: req.body.name,
       description: req.body.description,

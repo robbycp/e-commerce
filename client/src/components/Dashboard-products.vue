@@ -17,28 +17,56 @@
             <v-container grid-list-md>
               <v-layout wrap>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.name" label="Product Name"></v-text-field>
+                  <v-text-field v-model="editedProduct.name"
+                    label="Product Name"
+                    required
+                    ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.description" label="Description"></v-text-field>
+                  <v-textarea v-model="editedProduct.description"
+                    label="Description"
+                    required
+                    ></v-textarea>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.stock" label="Stock"></v-text-field>
+                  <v-text-field v-model="editedProduct.stock"
+                  type="number" label="Stock" min="0"
+                  :rules="[rules.minimumZero]"
+                  required></v-text-field>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.image" label="Image"></v-text-field>
+                  <input color="success" type="file"
+                  @change="onFileSelected"
+                  required >
                 </v-flex>
                 <v-flex>
-                  <v-img :src="editedProduct.image"></v-img>
+                  <v-img
+                    :src="editedProduct.image || imageFilePath"
+                    ></v-img>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.price" label="Price"></v-text-field>
+                  <v-text-field v-model="editedProduct.price"
+                  type="number" label="Price" min="0"
+                  :rules="[rules.minimumZero]"
+                  required></v-text-field>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.currency" label="Currency"></v-text-field>
+                  <v-select
+                    v-model="editedProduct.currency"
+                    :items="form.currencies"
+                    :rules="[v => !!v || 'Currency is required']"
+                    label="Currency"
+                    required
+                  ></v-select>
                 </v-flex>
                 <v-flex xs12>
-                  <v-text-field v-model="editedProduct.category" label="Category"></v-text-field>
+                  <v-select
+                    v-model="editedProduct.category"
+                    :items="form.categories"
+                    :rules="[v => !!v || 'Category is required']"
+                    label="Category"
+                    required
+                  ></v-select>
                 </v-flex>
               </v-layout>
             </v-container>
@@ -47,12 +75,12 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" flat @click="closeProductDialog">Cancel</v-btn>
-            <v-btn color="blue darken-1" flat @click="saveProductDialog">Save</v-btn>
+            <v-btn color="blue darken-1" flat @click="saveProductDialog(editedProduct._id)">Save</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
     </v-toolbar>
-    <v-data-table :headers="headersProduct" :items="listProducts" class="elevation-1">
+    <v-data-table :headers="headersProduct" :items="$store.state.allProducts" class="elevation-1">
       <template v-slot:items="props">
         <td>{{ props.item.name }}</td>
         <td class="text-xs-right">{{ props.item.description }}</td>
@@ -85,9 +113,18 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data: () => ({
     dialog: false,
+    form: {
+      currencies: ['IDR'],
+      categories: ['accessories']
+    },
+    rules: {
+      minimumZero: val => val >=0 || 'Minimum Zero'
+    },
     headersProduct: [
       {
         text: 'Product',
@@ -103,11 +140,11 @@ export default {
       { text: 'Category', value: 'category' },
       { text: 'Actions', value: 'name', sortable: false }
     ],
-    listProducts: [],
     editedIndex: -1,
     editedProduct: {
+      _id: '',
       name: '',
-      description: 0,
+      description: '',
       stock: 0,
       image: '',
       price: 0,
@@ -116,7 +153,7 @@ export default {
     },
     defaultProduct: {
       name: '',
-      description: 0,
+      description: '',
       stock: 0,
       image: '',
       price: 0,
@@ -128,6 +165,10 @@ export default {
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+    },
+    imageFilePath () {
+      console.log('ini image', this.editedProduct.image.imageFilePath);
+      return this.editedProduct.image
     }
   },
 
@@ -142,60 +183,16 @@ export default {
   },
 
   methods: {
+    onFileSelected: function (event) {
+      this.editedProduct.image = event.target.files[0]
+    },
     initialize () {
-      this.listProducts = [
-        {
-          name: 'Baju Hijrah',
-          description: 'ini makanan enak',
-          stock: 10,
-          image: 'https://ecs7.tokopedia.net/img/cache/700/product-1/2019/1/8/357645562/357645562_36081d03-32fa-4bad-b828-ff8c674495d3_640_640.jpg',
-          price: 100000,
-          currency: 'IDR',
-          category: 'top'
-        },
-        {
-          name: 'Celana Hijrah',
-          description: 'ini barang bagus',
-          stock: 11,
-          image: 'https://ecs7.tokopedia.net/img/cache/700/product-1/2019/1/8/357645562/357645562_36081d03-32fa-4bad-b828-ff8c674495d3_640_640.jpg',
-          price: 220000,
-          currency: 'IDR',
-          category: 'bottom'
-        },
-        {
-          name: 'Topi Hijrah',
-          description: 'topi hijrah bagus',
-          stock: 20,
-          image: 'https://ecs7.tokopedia.net/img/cache/700/product-1/2019/1/8/357645562/357645562_36081d03-32fa-4bad-b828-ff8c674495d3_640_640.jpg',
-          price: 80000,
-          currency: 'IDR',
-          category: 'accesories'
-        },
-        {
-          name: 'Sarung Hijrah',
-          description: 'sarung motif bagus',
-          stock: 15,
-          image: 'https://ecs7.tokopedia.net/img/cache/700/product-1/2019/1/8/357645562/357645562_36081d03-32fa-4bad-b828-ff8c674495d3_640_640.jpg',
-          price: 70000,
-          currency: 'IDR',
-          category: 'top'
-        },
-        {
-          name: 'Jaket Hijrah',
-          description: 'ini bagus',
-          stock: 29,
-          image: 'https://ecs7.tokopedia.net/img/cache/700/product-1/2019/1/8/357645562/357645562_36081d03-32fa-4bad-b828-ff8c674495d3_640_640.jpg',
-          price: 100000,
-          currency: 'IDR',
-          category: 'top'
-        }
-      ]
+      this.$store.dispatch('getProducts')
     },
 
     editProduct (item) {
-      this.editedIndex = this.listProducts.indexOf(item)
-      this.editedProduct = Object.assign({}, item)
       this.dialog = true
+      this.editedProduct = item
     },
 
     deleteProduct (item) {
@@ -211,13 +208,36 @@ export default {
       }, 300)
     },
 
-    saveProductDialog () {
-      if (this.editedIndex > -1) {
-        Object.assign(this.listProducts[this.editedIndex], this.editedProduct)
-      } else {
-        this.listProducts.push(this.editedProduct)
-      }
-      this.closeProductDialog()
+    saveProductDialog (val) {
+      let method = (val) ? 'PUT' : 'POST'
+      let itemId = (val) ? `/${val}` : ''
+      let fd = new FormData()
+      Object.keys(this.defaultProduct).forEach((key) => {
+        fd.append(key, this.editedProduct[key])
+      })
+      axios({
+        method: method,
+        url: `${this.$store.state.url_server}/products${itemId}`,
+        headers: {
+          token: JSON.parse(localStorage.token).token
+        },
+        data: fd
+      })
+        .then(({ data }) => {
+          console.log('ini data received', data)
+          if (data.message) {
+            let showMessage = {
+              title: 'Error',
+              message: data.message,
+              type: 'error'
+            }
+            return this.$store.commit('showNotification', showMessage)
+          }
+          this.closeProductDialog()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   }
 }

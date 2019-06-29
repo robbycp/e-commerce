@@ -13,12 +13,6 @@
                   <v-text-field v-model="loginUser.password" :type="'password'" label="Password" required></v-text-field>
                   <v-btn @click="defaultLogin()" class="success">Submit</v-btn>
                   <p>Or sign in using Google</p>
-                  <g-signin-button
-                    :params="googleSignInParams"
-                    @success="onSignInSuccess"
-                    @error="onSignInError">
-                    Sign in with Google
-                  </g-signin-button>
                 </form>
               </v-card>
             </v-container>
@@ -64,14 +58,14 @@ export default {
     }
   },
   methods: {
-    defaultLogin() {
-      event.preventDefault();
+    defaultLogin () {
+      event.preventDefault()
       let sendLoginUser = {
         username: this.loginUser.username,
         password: this.loginUser.password,
         login_type: 'default'
       }
-      axios.post(`${this.$root.url_server}/users/login`, sendLoginUser)
+      axios.post(`${this.$store.state.url_server}/users/login`, sendLoginUser)
         .then(({ data }) => {
           if (data.token) {
             let token = {
@@ -85,32 +79,27 @@ export default {
               type: 'success',
               confirmButtonText: 'Ok'
             })
-            this.$root.getListArticles()
-            this.$root.getUserProfile()
-            this.$emit('set-isLogin', true)
-            this.$emit('change-page', "content-list-articles")
+            this.$store.commit('setIsLogin', true)
+            this.$store.dispatch('getCart')
+            this.$store.dispatch('getProfile')
+            this.$router.push('/')
           }
         })
         .catch((err) => {
-          Swal.fire({
-            title: 'Error!',
-            text: err.response.data.message,
-            type: 'error',
-            confirmButtonText: 'Cancel'
-          })
+          console.log(err)
         })
     },
-    sendRegisterUser() {
+    sendRegisterUser () {
       let sendRegisterUser = {
         full_name: this.registerUser.full_name,
         username: this.registerUser.username,
         password: this.registerUser.password,
-        email: this.registerUser.email,
+        email: this.registerUser.email
       }
       axios({
         method: 'POST',
         data: sendRegisterUser,
-        url: `${this.$root.url_server}/users/register`,
+        url: `${this.$store.state.url_server}/users/register`
       })
         .then(({ data }) => {
           Swal.fire({
@@ -119,10 +108,10 @@ export default {
             type: 'success',
             confirmButtonText: 'Okay'
           })
-          this.registerUser = { full_name: '', username: '', password: '', email: ''}
+          this.registerUser = { full_name: '', username: '', password: '', email: '' }
         })
         .catch((err) => {
-          console.log(err);
+          console.log(err)
           Swal.fire({
             title: 'Error!',
             text: err.response.data.message,
@@ -139,7 +128,7 @@ export default {
         username: profile.U3.split('@')[0],
         login_type: 'google'
       }
-      axios.post(`${this.$root.url_server}/users/login`, sendUser)
+      axios.post(`${this.$store.state.url_server}/users/login`, sendUser)
         .then(({ data }) => {
           if (data.token) {
             let token = {
@@ -153,10 +142,8 @@ export default {
               type: 'success',
               confirmButtonText: 'Ok'
             })
-            this.$root.getListArticles()
-            this.$root.getUserProfile()
-            this.$emit('set-isLogin', true)
-            this.$emit('change-page', "content-list-articles")
+            this.$store.dispatch('getCart')
+            this.$store.dispatch('getProfile')
           }
         })
         .catch((err) => {
@@ -176,30 +163,6 @@ export default {
         type: 'error',
         confirmButtonText: 'Cancel'
       })
-    },
-    onSignIn(googleUser) {
-      var id_token = googleUser.getAuthResponse().id_token;
-      axios.post(`${this.$root.url_server}/users/login`, {
-        google_id_token: id_token
-      })
-        .then(({ data }) => {
-          let token = {
-            token: data.token,
-            token_type: 'google'
-          }
-          localStorage.setItem('token', JSON.stringify(token))
-          this.loginUser = { username: '', password: ''}    
-          this.isLogin = true
-          this.currentPage = "content-list-articles"   
-        })
-        .catch(({ message }) => {
-          Swal.fire({
-            title: 'Error!',
-            text: err.response.data.message,
-            type: 'error',
-            confirmButtonText: 'Cancel'
-          })
-        })
     }
   }
 }
