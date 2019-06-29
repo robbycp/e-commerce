@@ -14,9 +14,9 @@ module.exports = {
         })
     }
   },
-  deleteProduct() {
+  deleteProductTesting() {
     if (process.env.NODE_ENV == 'test') {
-      Product.deleteMany({})
+      Product.deleteMany({ category: 'testing' })
         .then(() => {
           console.log('Product cleared');
         })

@@ -12,16 +12,17 @@ after(function(){
   deleteUserTesting()
 })
 
+let sendUser = {
+  full_name: 'testing',
+  email: 'testing@mail.com',
+  password: 'testing',
+  username: 'testing',
+  admin: false
+}
+
 describe('Customer Authentication', function() {
   describe('Create new user POST /register', function() {
     it('should have property id, full_name, email, username, admin. No password. And 201 status', function(done) {
-      let sendUser = {
-        full_name: 'testing',
-        email: 'testing@mail.com',
-        password: 'testing',
-        username: 'testing',
-        admin: false
-      }
       chai
         .request(app)
         .post('/users/register')
@@ -34,6 +35,54 @@ describe('Customer Authentication', function() {
           expect(res.body).to.not.have.property('password')
           expect(res.body).to.have.property('username')
           expect(res.body).to.have.property('admin')
+          done()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    it('should return message email already used if register with the same email', function(done) {
+      let newUser = Object.assign({}, sendUser)
+      newUser.username = 'different'
+      chai
+        .request(app)
+        .post('/users/register')
+        .send(newUser)
+        .then((res) => {
+          expect(res).to.have.status(400)
+          expect(res.body).to.have.property('message', 'email is already in our database. Please use other email')
+          done()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    it('should return message username already used if register with the same username', function(done) {
+      let newUser = Object.assign({}, sendUser)
+      newUser.email = 'different@mail.com'
+      chai
+        .request(app)
+        .post('/users/register')
+        .send(newUser)
+        .then((res) => {
+          expect(res).to.have.status(400)
+          expect(res.body).to.have.property('message', 'username is already in our database. Please use other username')
+          done()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    it('should return message not email if register with not email format', function(done) {
+      let newUser = Object.assign({}, sendUser)
+      newUser.email = 'testing'
+      chai
+        .request(app)
+        .post('/users/register')
+        .send(newUser)
+        .then((res) => {
+          expect(res).to.have.status(400)
+          expect(res.body).to.have.property('message', `${newUser.email} is not a valid email`)
           done()
         })
         .catch((err) => {
@@ -60,10 +109,28 @@ describe('Customer Authentication', function() {
           console.log(err)
         })
     })
-    it('should send message error if username / password wrong and status 400', function(done) {
+    it('should send message username / password wrong and status 400 if sending wrong username', function(done) {
       let sendUserLogin = {
         password: 'testing',
         username: 'salah',
+      }
+      chai
+        .request(app)
+        .post('/users/login')
+        .send(sendUserLogin)
+        .then((res) => {
+          expect(res).to.have.status(401)
+          expect(res.body).to.have.property('message', 'Username / password Invalid')
+          done()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    it('should send message username / password wrong and status 400 if sending wrong password', function(done) {
+      let sendUserLogin = {
+        password: 'salah',
+        username: 'testing',
       }
       chai
         .request(app)

@@ -3,17 +3,19 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+var Product = require('../models/model-product')
+
 var transactionSchema = new Schema({
   itemBought: [{
     item: { 
-      type: 'ObjectId', 
+      type: Schema.Types.ObjectId, 
       ref: 'Product'
     },
     quantity: Number,
   }],
   paymentStatus: String, // unpaid => unpaid
   transactionStatus: String, // cart => checkout => payment received => send => success
-  buyerId: {type: 'ObjectId', ref: 'User'},
+  buyerId: {type: Schema.Types.ObjectId, ref: 'User'},
   address: String,
   sendMethod: String
 }, {timestamps: true});

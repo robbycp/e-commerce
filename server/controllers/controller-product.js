@@ -1,4 +1,5 @@
 const Product = require('../models/model-product')
+const { deleteFile } = require('../helpers/image')
 
 class ControllerArticle {
   static create(req, res, next) {
@@ -6,7 +7,7 @@ class ControllerArticle {
       name: req.body.name,
       description: req.body.description,
       stock: req.body.stock,
-      image: req.body.image,
+      image: (req.file) ? req.file.gcsUrl : '',
       price: req.body.price,
       currency: req.body.currency,
       category: req.body.category
@@ -47,10 +48,29 @@ class ControllerArticle {
   }
   
   static update(req, res, next) {
-    let schemaField = Object.keys(Product.prototype.schema.paths)
-    let filteredField = Object.keys(req.body).filter((x) => schemaField.indexOf(x) > -1)
-    let updatedProduct = filteredField.reduce((acc, el) => Object.assign(acc, {[el]: req.body[el]}), {})
-    Product.findByIdAndUpdate(req.params.id, updatedProduct, { useFindAndModify: false, new: true })
+    console.log('masuk ke update', req.body)
+    let newProduct = {
+      name: req.body.name,
+      description: req.body.description,
+      stock: req.body.stock,
+      price: req.body.price,
+      currency: req.body.currency,
+      category: req.body.category
+    }
+    let updatedProduct = null
+    Product.findById(req.params.id)
+      .then((product) => {
+        Object.keys(newProduct).forEach(key => {
+          product[key] = newProduct[key]
+        })
+        updatedProduct = product
+        let filename = product.image.split('/')
+        return deleteFile(filename[filename.length - 1])
+      })
+      .then(()=>{
+        updatedProduct.image = req.file.gcsUrl
+        return updatedProduct.save()
+      })
       .then((product) => {
         res.status(201).json(product)
       })
@@ -59,7 +79,6 @@ class ControllerArticle {
   
   static delete(req, res, next) {
     let id = req.params.id
-    console.log('ini idnya', id)
     Product.findById(id)
       .then((article) => {
         if (!article) throw { code: 404 }

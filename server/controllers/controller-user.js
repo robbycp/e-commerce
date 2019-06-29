@@ -7,16 +7,16 @@ class ControllerUser {
   static login(req, res, next) {
     let { username, password } = req.body
     let userData
-    User.findOne({ username: username })
+    User.findOne({ username })
       .then((user) => {
         userData = user
-        if (!user) next({code: 401, message: 'Username / password Invalid'})
+        if (!user) throw {code: 401, message: 'Username / password Invalid'}
         else {
           return compareHash(password, user.password)
         }
       })
       .then(result => {
-        if (!result) next({code: 401, message: 'Username / password Invalid'})
+        if (!result) throw {code: 401, message: 'Username / password Invalid'}
         else {
           let payload = {
             userId: userData._id
@@ -55,7 +55,7 @@ class ControllerUser {
           full_name: user.full_name,
           email: user.email,
           username: user.username,
-          admin: false,
+          admin: user.admin || false,
         }
         res.status(201).json(sendUser)
       })

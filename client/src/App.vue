@@ -31,6 +31,13 @@ export default {
         url: `${this.url_server}/products`
       })
     }
+  },
+  created () {
+    if (localStorage.token) {
+      this.$store.isLogin = true
+      this.$store.dispatch('getCart')
+      this.$store.dispatch('getProfile')
+    }
   }
 }
 </script>

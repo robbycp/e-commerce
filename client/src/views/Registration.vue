@@ -43,6 +43,9 @@
 </template>
 
 <script>
+import axios from 'axios'
+import Swal from 'sweetalert2'
+
 export default {
   data () {
     return {
@@ -61,17 +64,142 @@ export default {
     }
   },
   methods: {
-    defaultLogin () {
-
+    defaultLogin() {
+      event.preventDefault();
+      let sendLoginUser = {
+        username: this.loginUser.username,
+        password: this.loginUser.password,
+        login_type: 'default'
+      }
+      axios.post(`${this.$root.url_server}/users/login`, sendLoginUser)
+        .then(({ data }) => {
+          if (data.token) {
+            let token = {
+              token: data.token,
+              token_type: 'default'
+            }
+            localStorage.setItem('token', JSON.stringify(token))
+            Swal.fire({
+              title: `Welcome back ${sendLoginUser.username}!`,
+              text: 'Success Login',
+              type: 'success',
+              confirmButtonText: 'Ok'
+            })
+            this.$root.getListArticles()
+            this.$root.getUserProfile()
+            this.$emit('set-isLogin', true)
+            this.$emit('change-page', "content-list-articles")
+          }
+        })
+        .catch((err) => {
+          Swal.fire({
+            title: 'Error!',
+            text: err.response.data.message,
+            type: 'error',
+            confirmButtonText: 'Cancel'
+          })
+        })
     },
-    onSignInSuccess () {
-
+    sendRegisterUser() {
+      let sendRegisterUser = {
+        full_name: this.registerUser.full_name,
+        username: this.registerUser.username,
+        password: this.registerUser.password,
+        email: this.registerUser.email,
+      }
+      axios({
+        method: 'POST',
+        data: sendRegisterUser,
+        url: `${this.$root.url_server}/users/register`,
+      })
+        .then(({ data }) => {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Successfully register! Please login to continue using.',
+            type: 'success',
+            confirmButtonText: 'Okay'
+          })
+          this.registerUser = { full_name: '', username: '', password: '', email: ''}
+        })
+        .catch((err) => {
+          console.log(err);
+          Swal.fire({
+            title: 'Error!',
+            text: err.response.data.message,
+            type: 'error',
+            confirmButtonText: 'Cancel'
+          })
+        })
     },
-    onSignInError () {
-
+    onSignInSuccess (googleUser) {
+      const profile = googleUser.getBasicProfile() // etc etc
+      let sendUser = {
+        full_name: profile.ig,
+        email: profile.U3,
+        username: profile.U3.split('@')[0],
+        login_type: 'google'
+      }
+      axios.post(`${this.$root.url_server}/users/login`, sendUser)
+        .then(({ data }) => {
+          if (data.token) {
+            let token = {
+              token: data.token,
+              token_type: 'google'
+            }
+            localStorage.setItem('token', JSON.stringify(token))
+            Swal.fire({
+              title: `Welcome back ${sendUser.username}!`,
+              text: 'Success Login',
+              type: 'success',
+              confirmButtonText: 'Ok'
+            })
+            this.$root.getListArticles()
+            this.$root.getUserProfile()
+            this.$emit('set-isLogin', true)
+            this.$emit('change-page', "content-list-articles")
+          }
+        })
+        .catch((err) => {
+          Swal.fire({
+            title: 'Error!',
+            text: err.response.data.message,
+            type: 'error',
+            confirmButtonText: 'Cancel'
+          })
+        })
     },
-    sendRegisterUser () {
-
+    onSignInError (error) {
+      console.log(error)
+      Swal.fire({
+        title: 'Error!',
+        text: error.response.data.message,
+        type: 'error',
+        confirmButtonText: 'Cancel'
+      })
+    },
+    onSignIn(googleUser) {
+      var id_token = googleUser.getAuthResponse().id_token;
+      axios.post(`${this.$root.url_server}/users/login`, {
+        google_id_token: id_token
+      })
+        .then(({ data }) => {
+          let token = {
+            token: data.token,
+            token_type: 'google'
+          }
+          localStorage.setItem('token', JSON.stringify(token))
+          this.loginUser = { username: '', password: ''}    
+          this.isLogin = true
+          this.currentPage = "content-list-articles"   
+        })
+        .catch(({ message }) => {
+          Swal.fire({
+            title: 'Error!',
+            text: err.response.data.message,
+            type: 'error',
+            confirmButtonText: 'Cancel'
+          })
+        })
     }
   }
 }
