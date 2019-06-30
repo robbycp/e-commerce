@@ -8,7 +8,7 @@ var productSchema = new Schema({
   description: String,
   stock: {
     type: Number,
-    min: [0, 'Product cant have stock below 0']
+    min: [0, 'Product out of stock']
   },
   image: String,
   price: {

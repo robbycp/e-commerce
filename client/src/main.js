@@ -8,7 +8,9 @@ import 'vuetify/dist/vuetify.min.css'
 
 Vue.config.productionTip = true
 
-Vue.use(Vuetify)
+Vue.use(Vuetify, {
+  iconfont: 'fa'
+})
 
 new Vue({
   router,

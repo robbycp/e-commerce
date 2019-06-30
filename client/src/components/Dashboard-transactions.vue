@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data: () => ({
     headersTransaction: [
@@ -58,74 +60,19 @@ export default {
 
   methods: {
     initialize () {
-      this.listTransactions = [
-        {
-          _id: 'jfiosjfwef8dsf0a9sf0safjweie0f9',
-          itemBought: [{
-            item: 'Baju Hijrah',
-            quantity: 1
-          }],
-          paymentStatus: 'unpaid',
-          transactionStatus: 'checkout',
-          buyerId: '5o23ijddf09fjeowifwe09fwej',
-          address: 'Jalan tabah raya no 6 rt 08 02 kodamar kelapa gading',
-          sendMethod: 'JNE express'
+      axios({
+        method: 'GET',
+        headers: {
+          token: JSON.parse(localStorage.token).token
         },
-        {
-          _id: 'jfiosjfwef8dsf0a9sf0safjweie0f2',
-          itemBought: [{
-            item: 'Topi Hijrah',
-            quantity: 2
-          }],
-          paymentStatus: 'unpaid',
-          transactionStatus: 'checkout',
-          buyerId: '5o23ijddf09fjeowifwe09fwej',
-          address: 'Jalan tabah raya no 6 rt 08 02 kodamar kelapa gading',
-          sendMethod: 'JNE express'
-        },
-        {
-          _id: 'jfiosjfwef8dsf0a9sf0safjweie0342',
-          itemBought: [{
-            item: 'Sarung Hijrah',
-            quantity: 3
-          }],
-          paymentStatus: 'paid',
-          transactionStatus: 'checkout',
-          buyerId: '5o23ijddf09fjeowifwe09fwej',
-          address: 'Jalan tabah raya no 6 rt 08 02 kodamar kelapa gading',
-          sendMethod: 'JNE express'
-        },
-        {
-          _id: 'jfiosjfwef8dsf0a9sf0safjweie2912892',
-          itemBought: [{
-            item: 'Celana Hijrah',
-            quantity: 1
-          }],
-          paymentStatus: 'unpaid',
-          transactionStatus: 'checkout',
-          buyerId: '5o23ijddf09fjeowifwe09fwej',
-          address: 'Jalan tabah raya no 6 rt 08 02 kodamar kelapa gading',
-          sendMethod: 'JNE express'
-        },
-        {
-          _id: 'jfiosjfwef8dsf0a9sf0safjweie319h',
-          itemBought: [{
-            item: 'Jaket Hijrah',
-            quantity: 2
-          }, {
-            item: 'Baju Hijrah',
-            quantity: 1
-          }, {
-            item: 'Celana Hijrah',
-            quantity: 1
-          }],
-          paymentStatus: 'paid',
-          transactionStatus: 'checkout',
-          buyerId: '5o23ijddf09fjeowifwe09fwej',
-          address: 'Jalan tabah raya no 6 rt 08 02 kodamar kelapa gading',
-          sendMethod: 'JNE express'
-        }
-      ]
+        url: `${this.$store.state.url_server}/transactions/alltrx`
+      })
+        .then(({ data }) => {
+          this.listTransactions = data
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     },
 
     deleteProduct (item) {

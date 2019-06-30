@@ -6,7 +6,7 @@
       <v-spacer></v-spacer>
       <v-dialog v-model="dialog" max-width="500px">
         <template v-slot:activator="{ on }">
-          <v-btn color="primary" dark class="mb-2" v-on="on">New Item</v-btn>
+          <v-btn color="orange" class="mb-2" v-on="on">New Item</v-btn>
         </template>
         <v-card>
           <v-card-title>
@@ -40,8 +40,8 @@
                   required >
                 </v-flex>
                 <v-flex>
-                  <v-img
-                    :src="editedProduct.image || imageFilePath"
+                  <v-img v-if="editedProduct.image"
+                    :src="editedProduct.image"
                     ></v-img>
                 </v-flex>
                 <v-flex xs12>
@@ -114,8 +114,10 @@
 
 <script>
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 export default {
+  name: 'dashboard-products',
   data: () => ({
     dialog: false,
     form: {
@@ -123,7 +125,7 @@ export default {
       categories: ['accessories']
     },
     rules: {
-      minimumZero: val => val >=0 || 'Minimum Zero'
+      minimumZero: val => val >= 0 || 'Minimum Zero'
     },
     headersProduct: [
       {
@@ -165,10 +167,6 @@ export default {
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-    },
-    imageFilePath () {
-      console.log('ini image', this.editedProduct.image.imageFilePath);
-      return this.editedProduct.image
     }
   },
 
@@ -196,8 +194,39 @@ export default {
     },
 
     deleteProduct (item) {
-      const index = this.listProducts.indexOf(item)
-      confirm('Are you sure you want to delete this item?') && this.listProducts.splice(index, 1)
+      let val
+      Swal.fire({
+        title: 'Delete Product',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Delete'
+      })
+        .then((result) => {
+          val = result.value
+          if (result.value) {
+            return axios({
+              method: 'DELETE',
+              headers: { token: JSON.parse(localStorage.token).token },
+              url: `${this.$store.state.url_server}/products/${item._id}`
+            })
+          }
+        })
+        .then((result) => {
+          if (val) {
+            Swal.fire(
+              'Success!',
+              'You are successfully delete one product',
+              'success'
+            )
+            this.$store.dispatch('getProducts')
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     },
 
     closeProductDialog () {
@@ -233,6 +262,7 @@ export default {
             }
             return this.$store.commit('showNotification', showMessage)
           }
+          this.$store.dispatch('getProducts')
           this.closeProductDialog()
         })
         .catch((err) => {

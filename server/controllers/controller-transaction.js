@@ -70,7 +70,9 @@ class ControllerTransaction {
   }
 
   static readAllTransaction(req, res, next) {
-    Transaction.find().populate('buyerId').populate('itemBought')
+    Transaction.find()
+      .populate('buyerId', 'full_name email username')
+      .populate('itemBought.item')
       .then((transactions) => {
         res.status(200).json(transactions)
       })
@@ -78,82 +80,109 @@ class ControllerTransaction {
 
   static readOne(req, res, next) {
     Transaction.findById(req.params.id)
+      .populate('buyerId', 'full_name email username')
+      .populate('itemBought.item')
       .then((transaction) => {
-        res.json(transaction)
+        let sendData = {
+          _id: transaction._id,
+          updatedAt: transaction.updatedAt,
+          sendMethod: transaction.sendMethod,
+          itemBought: transaction.itemBought,
+          total: transaction.totalTransaction
+        }
+        res.json(sendData)
       })
       .catch(next)
   }
 
   static readCart(req, res, next) {
-    Transaction.find({ buyerId: req.userId, transactionStatus: 'cart'})
+    Transaction
+      .find({ buyerId: req.userId, transactionStatus: 'cart'})
+      .populate('itemBought.item')
       .then((transaction) => {
-        res.status(200).json(transaction)
+        res.status(200).json(transaction[0])
       })
       .catch(next)
   }
 
   static updateQuantity(req, res, next) {
-    let newUpdateProduct = {
-      _id: req.body._id,
-      quantity: req.body.quantity
-    }
-    let product, transaction
-    let promiseProduct = Product.findById(newUpdateProduct._id)
+    let updateTrx = req.body.updatedTrx
+    let promiseProduct = []
+    updateTrx.itemBought.forEach(product => {
+      promiseProduct.push(Product.findById(product.item._id))
+    })
     let promiseTrx = Transaction.findById(req.params.id)
-    Promise.all([promiseProduct, promiseTrx])
-      .then((values) => {
-        product = values[0]
-        transaction = values[1]
-        if (!transaction) throw { code: 404, message: 'Transaction not found' }
-        else if (!product) throw { code: 404, message: 'Product not found' }
-        else {
-          transaction.itemBought.forEach((item, index) => {
-            if (item.item == newUpdateProduct._id) {
-              let diffStock
-              if (newUpdateProduct.quantity < item.quantity) {
-                diffStock = item.quantity - newUpdateProduct.quantity
-                product.stock += diffStock
-              } else {
-                diffStock = newUpdateProduct.quantity - item.quantity
-                product.stock -= diffStock
-              }
-              transaction.itemBought[index].quantity = newUpdateProduct.quantity
-            }
-          })
-        }
-        return Promise.all([transaction.save(), product.save()])
-      })
+    let promises = [promiseTrx, ...promiseProduct]
+    let products = []
+    let transaction
+    Promise.all(promises)
       .then((values) => {
         transaction = values[0]
-        product = values[1]
-        // console.log('ini hasil update transaksi', transaction)
-        // console.log('ini hasil update stock', product);
+        products = values.slice(1)
+        if (!transaction) throw { code: 404, message: 'Transaction not found' }
+        else if (products.length !== updateTrx.itemBought.length) {
+          throw { code: 404, message: 'Product not found' }
+        }
+        else {
+          let promiseSaveProduct = []
+          transaction.itemBought.forEach((item, index) => {
+            let productDbIndex = products.findIndex((el) => {
+              return el._id.toString() == item.item.toString()
+            })
+            let productUpdIndex = updateTrx.itemBought.findIndex((el) => {
+              return el.item._id.toString() == item.item.toString()
+            })
+            let diffStock
+            if (updateTrx.itemBought[productUpdIndex].quantity < item.quantity) {
+              diffStock = item.quantity - updateTrx.itemBought[productUpdIndex].quantity
+              products[productDbIndex].stock += diffStock
+            } else {
+              diffStock = updateTrx.itemBought[productUpdIndex].quantity - item.quantity
+              products[productDbIndex].stock -= diffStock
+            }
+            transaction.itemBought[index].quantity = updateTrx.itemBought[productUpdIndex].quantity
+            promiseSaveProduct.push(products[productDbIndex].save())
+          })
+          promiseTrx = transaction
+          return Promise.all(promiseSaveProduct)
+        }
+      })
+      .then((products) => {
+        return promiseTrx.save()
+      })
+      .then((values) => {
+        let transaction = values
         res.status(201).json(transaction)
       })
       .catch(next)
   }
   
   static deleteOneProduct(req, res, next) {
+    let transaction, product
     let id = req.params.id
     let productId = req.body._id
-    Transaction.findById(id)
-      .then((transaction) => {
+    let promiseTrx = Transaction.findById(id)
+    let promiseProduct = Product.findById(productId)
+    Promise.all([promiseTrx, promiseProduct])
+      .then((values) => {
+        transaction = values[0]
+        product = values[1]
         if (!transaction) throw { code: 404 }
         else {
+          let deletedProduct
+          // update itembought in transaction
           transaction.itemBought = transaction.itemBought.filter((item) => {
-            // console.log('ini item', item.item.toString())
-            // console.log('ini item', typeof item.item.toString())
-            // console.log('ini productId', productId)
-            // console.log('ini productId', typeof productId)
-            // console.log('perbandingan', item.item.toString() !== productId)
+            deletedProduct = item
             return item.item.toString() !== productId
           })
-          console.log('ini sebelum di save setelah di filter', transaction)
-          return transaction.save()
+          // update product stock
+          product.stock += deletedProduct.quantity
+          return Promise.all([product.save(), transaction.save()])
         } 
       })
-      .then((data) => {
-        console.log('ini hasil delete one product di cart', data)
+      .then((values) => {
+        let product = values[0]
+        let transaction = values[1]
         res.status(201).json({
           message: 'successfully delete transaction'
         })
@@ -162,14 +191,17 @@ class ControllerTransaction {
   }  
 
   static checkout(req, res, next) {
-    // tambah alamat, metode kirim, metode pembayaran baru checkout
     let transsactionId = req.params.id
-    let updatedCheckout = { transactionStatus: 'checkout' }
+    let updatedCheckout = { 
+      transactionStatus: 'checkout',
+      address: req.body.address,
+      sendMethod: req.body.sendMethod
+    }
     Transaction.findByIdAndUpdate(transsactionId, updatedCheckout, { useFindAndModify: false, new: true })
-      .then((res) => {
-        if (!res) throw ({ code: 404, messagee: 'Transaction not found'})
+      .then((result) => {
+        if (!result) throw ({ code: 404, messagee: 'Transaction not found'})
         else {
-          res.status(201).json(res)
+          res.status(201).json(result)
         }
       })
       .catch(next)

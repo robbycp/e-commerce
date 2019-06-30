@@ -12,7 +12,6 @@
                   <v-text-field v-model="loginUser.username" label="Username" required></v-text-field>
                   <v-text-field v-model="loginUser.password" :type="'password'" label="Password" required></v-text-field>
                   <v-btn @click="defaultLogin()" class="success">Submit</v-btn>
-                  <p>Or sign in using Google</p>
                 </form>
               </v-card>
             </v-container>
@@ -41,6 +40,7 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 
 export default {
+  name: 'registration',
   data () {
     return {
       activeTab: '',
@@ -80,13 +80,13 @@ export default {
               confirmButtonText: 'Ok'
             })
             this.$store.commit('setIsLogin', true)
+            this.$router.push('/')
             this.$store.dispatch('getCart')
             this.$store.dispatch('getProfile')
-            this.$router.push('/')
           }
         })
         .catch((err) => {
-          console.log(err)
+          this.$store.commit('showError', err.response.data.message)
         })
     },
     sendRegisterUser () {
@@ -111,13 +111,7 @@ export default {
           this.registerUser = { full_name: '', username: '', password: '', email: '' }
         })
         .catch((err) => {
-          console.log(err)
-          Swal.fire({
-            title: 'Error!',
-            text: err.response.data.message,
-            type: 'error',
-            confirmButtonText: 'Cancel'
-          })
+          this.$store.commit('showError', err.response.data.message)
         })
     },
     onSignInSuccess (googleUser) {

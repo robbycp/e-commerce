@@ -70,7 +70,8 @@ class ControllerUser {
           full_name: result.full_name,
           username: result.username,
           email: result.email,
-          id: result._id
+          id: result._id,
+          admin: result.admin
         }
         res.json(sendData)
       })

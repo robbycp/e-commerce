@@ -11,7 +11,8 @@ export default new Vuex.Store({
     isLogin: false,
     loginUser: {},
     allProducts: [],
-    cart: []
+    oneProduct: {},
+    cart: {}
   },
   mutations: {
     showNotification (state, payload) {
@@ -35,6 +36,12 @@ export default new Vuex.Store({
       if (payload === false) {
         state.loginUser = {}
       }
+    },
+    setLoginUser (state, payload) {
+      state.loginUser = payload
+    },
+    setCart (state, payload) {
+      state.cart = payload
     }
   },
   actions: {
@@ -47,34 +54,33 @@ export default new Vuex.Store({
         }
       })
         .then(({ data }) => {
-          context.state.cart = data
+          context.commit('setCart', data)
         })
         .catch(err => {
           console.log(err)
         })
     },
     getProfile (context) {
-      axios({
-        method: 'GET',
-        url: `${context.state.url_server}/users/myprofile`,
-        headers: {
-          token: JSON.parse(localStorage.token).token
-        }
-      })
-        .then(({ data }) => {
-          context.state.loginUser = data
+      if (localStorage.token) {
+        axios({
+          method: 'GET',
+          url: `${context.state.url_server}/users/myprofile`,
+          headers: {
+            token: JSON.parse(localStorage.token).token
+          }
         })
-        .catch((err) => {
-          console.log(err)
-        })
+          .then(({ data }) => {
+            context.commit('setLoginUser', data)
+          })
+          .catch((err) => {
+            console.log(err)
+          })
+      }
     },
     getProducts (context) {
       axios({
         method: 'GET',
-        url: `${context.state.url_server}/products`,
-        headers: {
-          token: JSON.parse(localStorage.token).token
-        }
+        url: `${context.state.url_server}/products`
       })
         .then(({ data }) => {
           context.state.allProducts = data
@@ -82,6 +88,65 @@ export default new Vuex.Store({
         .catch((err) => {
           console.log(err)
         })
+    },
+    getOneProduct (context, payload) {
+      axios({
+        method: 'GET',
+        url: `${context.state.url_server}/products/${payload}`
+      })
+        .then(({ data }) => {
+          context.state.oneProduct = data
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
+    addCartToDatabase (context, payload) {
+      let showErrorLoginFirst = false
+      if (localStorage.token) {
+        if (!context.state.loginUser) {
+          showErrorLoginFirst = true
+        }
+      } else {
+        showErrorLoginFirst = true
+      }
+
+      if (showErrorLoginFirst) {
+        Swal.fire(
+          'Login First!',
+          'Please login to preceed add this item to cart',
+          'error'
+        )
+      } else {
+        let sendData = {
+          _id: payload.productId,
+          quantity: payload.quantity
+        }
+        axios({
+          method: 'POST',
+          data: sendData,
+          headers: {
+            token: JSON.parse(localStorage.token).token
+          },
+          url: `${context.state.url_server}/transactions`
+        })
+          .then(({ data }) => {
+            Swal.fire(
+              'Success!',
+              'Successfully added this product to your cart',
+              'success'
+            )
+          })
+          .catch((err) => {
+            if (err.response.message) {
+              Swal.fire(
+                'Error!',
+                err.response.message,
+                'error'
+              )
+            }
+          })
+      }
     }
   }
 })

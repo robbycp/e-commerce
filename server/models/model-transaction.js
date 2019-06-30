@@ -20,6 +20,10 @@ var transactionSchema = new Schema({
   sendMethod: String
 }, {timestamps: true});
 
+transactionSchema.virtual('totalTransaction').get(function () {
+  return this.itemBought.reduce((acc, el) => acc + (el.item.price * el.quantity), 0)
+})
+
 var Transaction = mongoose.model('Transaction', transactionSchema);
 
 module.exports = Transaction

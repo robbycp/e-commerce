@@ -6,22 +6,42 @@
         <v-divider class="mx-2" inset vertical></v-divider>
         <v-spacer></v-spacer>
       </v-toolbar>
-      <v-data-table :headers="headers" :items="productCart" class="elevation-1">
+      <v-data-table :headers="headers"
+        :items="productCart.itemBought"
+        class="elevation-1">
         <template v-slot:items="props">
-          <td>{{ props.item.name }}</td>
-          <td class="text-xs-right">{{ props.item.price }}</td>
+          <td>
+            <v-layout row>
+              <v-flex xs4>
+                <v-img :src="props.item.item.image"></v-img>
+              </v-flex>
+              <v-flex xs8>
+                <v-layout align-center justify-center
+                row fill-height>
+                  {{ props.item.item.name }}
+                </v-layout>
+              </v-flex>
+            </v-layout>
+          </td>
           <td class="text-xs-right">
-            <v-layout v-layout align-center justify-center row fill-height>
-              <v-btn fab dark small color="green" @click="minQuantity(props.item._id)"
+            {{ props.item.item.price }}
+          </td>
+          <td class="text-xs-right">
+            <v-layout align-center justify-center row fill-height>
+              <v-btn fab dark small color="green"
+                :disabled="quantityLayout.minButton"
+                @click="minQuantity(props.item.item._id)"
                 >-</v-btn>
               <v-text-field v-model="props.item.quantity"></v-text-field>
-              <v-btn fab dark small color="green" @click="addQuantity(props.item._id)"
+              <v-btn fab dark small color="green"
+                :disabled="quantityLayout.addButton"
+                @click="addQuantity(props.item.item._id)"
                 >+</v-btn>
             </v-layout>
           </td>
           <td class="text-xs-right">{{ props.item.total }}</td>
           <td class="justify-center layout px-0">
-            <v-icon small class="mr-2" @click="deleteItem(props.item)">
+            <v-icon small class="mr-2" @click="deleteItem(props.item.item)">
               delete
             </v-icon>
           </td>
@@ -39,7 +59,7 @@
               <p>Your Total is Rp {{ totalCart }}</p>
             </v-flex>
           </v-layout>
-          <v-btn @click="updateTrx()">Update</v-btn>
+          <v-btn @click="updateTrx()">Update Your Bag</v-btn>
         </v-container>
       </v-flex>
     </v-layout>
@@ -66,9 +86,17 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2'
+import axios from 'axios'
+
 export default {
+  name: 'cart',
   data: () => ({
     dialog: false,
+    quantityLayout: {
+      minButton: false,
+      addButton: false
+    },
     headers: [
       {
         text: 'Product',
@@ -80,7 +108,7 @@ export default {
       { text: 'Total', value: 'total' },
       { text: 'Actions', value: 'name', sortable: false }
     ],
-    productCart: [],
+    productCart: {},
     address: '',
     sendMethod: '',
     listSendMethod: [
@@ -94,89 +122,146 @@ export default {
 
   created () {
     this.initialize()
-    this.addTotalPerProduct()
-    this.getTotalCart()
+  },
+
+  watch: {
+    '$store.state.cart' () {
+      this.productCart = this.$store.state.cart
+    },
+    productCart () {
+      this.addTotalPerProduct()
+      this.getTotalCart()
+    },
+    'productCart.quantity' (val) {
+      console.log('masuk sini ga sih')
+      if (val < 0) {
+        this.quantityLayout.minButton = true
+      } else if (val > 0) {
+        this.quantityLayout.addButton = true
+      }
+    }
   },
 
   methods: {
     getTotalCart () {
-      this.totalCart = this.productCart.reduce((acc, el) => acc + el.total, 0)
+      this.totalCart = this.productCart.itemBought.reduce((acc, el) => acc + el.total, 0)
     },
     addTotalPerProduct () {
-      this.productCart = this.productCart.map((product) => {
+      this.productCart.itemBought = this.productCart.itemBought.map((product) => {
         return Object.assign(product, {
-          total: product.price * product.quantity
+          total: product.item.price * product.quantity
         })
       })
     },
     initialize () {
-      this.productCart = [
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiwef9',
-          name: 'Frozen Yogurt',
-          price: 10000,
-          quantity: 2
-        },
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiw323',
-          name: 'Ice cream sandwich',
-          price: 20000,
-          quantity: 5
-        },
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiw21312',
-          name: 'Eclair',
-          price: 25000,
-          quantity: 2
-        },
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiw2389',
-          name: 'Cupcake',
-          price: 80000,
-          quantity: 2
-        },
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiwef12',
-          name: 'Gingerbread',
-          price: 100000,
-          quantity: 2
-        },
-        {
-          _id: '4io41jsfase9wnvaifjaoweifjiwe213',
-          name: 'Jelly bean',
-          price: 95000,
-          quantity: 2
-        }
-      ]
+      this.$store.dispatch('getCart')
     },
 
     deleteItem (item) {
-      const index = this.productCart.indexOf(item)
-      confirm('Are you sure you want to delete this item?') && this.productCart.splice(index, 1)
+      let val
+      Swal.fire({
+        title: 'Are you sure you want to delete this product?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Delete'
+      })
+        .then((result) => {
+          val = result.value
+          let deletedProduct = { _id: item._id }
+          console.log('ini deleted', deletedProduct)
+          if (result.value) {
+            return axios({
+              method: 'DELETE',
+              headers: { token: JSON.parse(localStorage.token).token },
+              data: deletedProduct,
+              url: `${this.$store.state.url_server}/transactions/${this.productCart._id}`
+            })
+          }
+        })
+        .then((result) => {
+          if (val) {
+            Swal.fire(
+              'Success!',
+              'You are successfully delete one product',
+              'success'
+            )
+            this.$store.dispatch('getCart')
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     },
 
     sendCheckout () {
-
+      let sendData = {
+        address: this.address,
+        sendMethod: this.sendMethod
+      }
+      let url = `${this.$store.state.url_server}/transactions/${this.productCart._id}/checkout`
+      axios({
+        method: 'POST',
+        headers: {
+          token: JSON.parse(localStorage.token).token
+        },
+        data: sendData,
+        url: url
+      })
+        .then(() => {
+          this.$router.push(`/thanks/${this.productCart._id}`)
+        })
+        .catch((err) => {
+          console.log(err.response)
+        })
     },
 
     addQuantity (id) {
-      this.productCart.forEach((product) => {
-        if (product._id === id) {
+      this.productCart.itemBought.forEach((product) => {
+        if (product.item._id === id) {
           product.quantity++
         }
       })
     },
 
     minQuantity (id) {
-      this.productCart.forEach((product) => {
-        if (product._id === id) {
+      this.productCart.itemBought.forEach((product) => {
+        if (product.item._id === id) {
           product.quantity--
         }
       })
     },
 
     updateTrx () {
-
+      let sendData = {
+        updatedTrx: this.productCart
+      }
+      axios({
+        method: 'PUT',
+        headers: {
+          token: JSON.parse(localStorage.token).token
+        },
+        data: sendData,
+        url: `${this.$store.state.url_server}/transactions/${this.productCart._id}`
+      })
+        .then((result) => {
+          Swal.fire(
+            'Success Update',
+            'Successfully update your cart',
+            'success'
+          )
+          this.$store.dispatch('getCart')
+        })
+        .catch((err) => {
+          Swal.fire(
+            'Error!',
+            err.response.data.message,
+            'error'
+          )
+          console.log(err.response)
+        })
     }
   }
 }

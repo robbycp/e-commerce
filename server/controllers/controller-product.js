@@ -31,15 +31,7 @@ class ControllerArticle {
       })
       .catch(next)
   }
-
-  static readAll(req, res, next) {
-    Product.find().populate('user_id')
-      .then((articles) => {
-        res.json(articles)
-      })
-      .catch(next)
-  }
-
+  
   static readOne(req, res, next) {
     Product.findById(req.params.id)
       .then((product) => {
@@ -50,26 +42,22 @@ class ControllerArticle {
   
   static update(req, res, next) {
     console.log('masuk ke update', req.body)
-    let newProduct = {
-      name: req.body.name,
-      description: req.body.description,
-      stock: req.body.stock,
-      price: req.body.price,
-      currency: req.body.currency,
-      category: req.body.category
-    }
     let updatedProduct = null
     Product.findById(req.params.id)
       .then((product) => {
-        Object.keys(newProduct).forEach(key => {
-          product[key] = newProduct[key]
+        Object.keys(req.body).forEach(key => {
+          product[key] = req.body[key]
         })
         updatedProduct = product
-        let filename = product.image.split('/')
-        return deleteFile(filename[filename.length - 1])
+        if (req.file) {
+          let filename = product.image.split('/')
+          return deleteFile(filename[filename.length - 1])
+        }
       })
       .then(()=>{
-        updatedProduct.image = req.file.gcsUrl
+        if (req.file) {
+          updatedProduct.image = req.file.gcsUrl
+        }
         return updatedProduct.save()
       })
       .then((product) => {
