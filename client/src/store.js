@@ -7,7 +7,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    url_server: 'http://localhost:3000', // http://localhost;3000 https:35.185.180.89:80
+    url_server: 'http://35.185.180.89', // http://localhost;3000 https:35.185.180.89:80
     isLogin: false,
     loginUser: {},
     allProducts: [],

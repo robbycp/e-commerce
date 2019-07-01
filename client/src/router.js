@@ -52,7 +52,7 @@ export default new Router({
             headers: {
               token: JSON.parse(localStorage.token).token
             },
-            url: 'http://localhost:3000/users/myprofile'
+            url: 'http://35.185.180.89/users/myprofile' // http://35.185.180.89/ http://localhost:3000
           })
             .then(({ data }) => {
               if (data.admin) {

@@ -10,7 +10,7 @@ const app = express()
 const { errorHandler } = require('./middlewares/error-handlers')
 const routeIndex = require('./routes')
 const Port = process.env.PORT
-const mongoDbUrl = process.env.DATABASE_CONNECTION + process.env.NODE_ENV
+const mongoDbUrl = process.env.DATABASE_CONNECTION
 
 // connect mongodb
 mongoose.connect(mongoDbUrl, { useNewUrlParser: true })

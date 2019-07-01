@@ -20,7 +20,7 @@ export default {
   },
   data () {
     return {
-      url_server: 'http://localhost:3000'
+      url_server: 'http://35.185.180.89' //http://35.185.180.89/ http://localhost:3000
     }
   },
   methods: {
